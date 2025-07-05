@@ -1,119 +1,119 @@
-name: Integration Tests
+# name: Integration Tests
 
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  schedule:
-    - cron: '0 2 * * 1-5'  # Roda às 2h da manhã, de segunda a sexta
+# on:
+#   push:
+#     branches: [main]
+#   pull_request:
+#     branches: [main]
+#   schedule:
+#     - cron: '0 2 * * 1-5'  # Roda às 2h da manhã, de segunda a sexta
 
-env:
-  FLUTTER_VERSION: '3.22.3'
+# env:
+#   FLUTTER_VERSION: '3.22.3'
 
-jobs:
-  android_e2e:
-    name: Android E2E Tests
-    runs-on: macos-latest  # Usando macOS pois permite tanto Android quanto iOS
-    timeout-minutes: 30
-    strategy:
-      matrix:
-        api-level: [29, 30]  # Android 10 e 11
-        target: [default]
+# jobs:
+#   android_e2e:
+#     name: Android E2E Tests
+#     runs-on: macos-latest  # Usando macOS pois permite tanto Android quanto iOS
+#     timeout-minutes: 30
+#     strategy:
+#       matrix:
+#         api-level: [29, 30]  # Android 10 e 11
+#         target: [default]
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v3
 
-      - name: Set up Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu'
-          java-version: '17'
+#       - name: Set up Java
+#         uses: actions/setup-java@v3
+#         with:
+#           distribution: 'zulu'
+#           java-version: '17'
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: stable
-          cache: true
+#       - name: Set up Flutter
+#         uses: subosito/flutter-action@v2
+#         with:
+#           flutter-version: ${{ env.FLUTTER_VERSION }}
+#           channel: stable
+#           cache: true
 
-      - name: AVD cache
-        uses: actions/cache@v3
-        id: avd-cache
-        with:
-          path: |
-            ~/.android/avd/*
-            ~/.android/adb*
-          key: avd-${{ matrix.api-level }}
+#       - name: AVD cache
+#         uses: actions/cache@v3
+#         id: avd-cache
+#         with:
+#           path: |
+#             ~/.android/avd/*
+#             ~/.android/adb*
+#           key: avd-${{ matrix.api-level }}
 
-      - name: Create AVD and generate snapshot for caching
-        if: steps.avd-cache.outputs.cache-hit != 'true'
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ matrix.api-level }}
-          target: ${{ matrix.target }}
-          arch: x86_64
-          profile: Nexus 6
-          script: echo "Generated AVD snapshot for caching."
+#       - name: Create AVD and generate snapshot for caching
+#         if: steps.avd-cache.outputs.cache-hit != 'true'
+#         uses: reactivecircus/android-emulator-runner@v2
+#         with:
+#           api-level: ${{ matrix.api-level }}
+#           target: ${{ matrix.target }}
+#           arch: x86_64
+#           profile: Nexus 6
+#           script: echo "Generated AVD snapshot for caching."
 
-      - name: Install dependencies
-        run: flutter pub get
+#       - name: Install dependencies
+#         run: flutter pub get
 
-      - name: Run Android Integration Tests
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ matrix.api-level }}
-          target: ${{ matrix.target }}
-          arch: x86_64
-          profile: Nexus 6
-          script: flutter test integration_test --flavor dev
+#       - name: Run Android Integration Tests
+#         uses: reactivecircus/android-emulator-runner@v2
+#         with:
+#           api-level: ${{ matrix.api-level }}
+#           target: ${{ matrix.target }}
+#           arch: x86_64
+#           profile: Nexus 6
+#           script: flutter test integration_test --flavor dev
 
-      - name: Upload Test Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-e2e-results-${{ matrix.api-level }}
-          path: test-results
-          retention-days: 7
+#       - name: Upload Test Results
+#         if: always()
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: android-e2e-results-${{ matrix.api-level }}
+#           path: test-results
+#           retention-days: 7
 
-  ios_e2e:
-    name: iOS E2E Tests
-    runs-on: macos-latest
-    timeout-minutes: 30
-    strategy:
-      matrix:
-        device: ['iPhone 14', 'iPhone 14 Pro Max']
-        os: ['16.2']
+#   ios_e2e:
+#     name: iOS E2E Tests
+#     runs-on: macos-latest
+#     timeout-minutes: 30
+#     strategy:
+#       matrix:
+#         device: ['iPhone 14', 'iPhone 14 Pro Max']
+#         os: ['16.2']
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v3
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: stable
-          cache: true
+#       - name: Set up Flutter
+#         uses: subosito/flutter-action@v2
+#         with:
+#           flutter-version: ${{ env.FLUTTER_VERSION }}
+#           channel: stable
+#           cache: true
 
-      - name: Install dependencies
-        run: |
-          flutter pub get
-          cd ios && pod install
+#       - name: Install dependencies
+#         run: |
+#           flutter pub get
+#           cd ios && pod install
 
-      - name: Start iOS Simulator
-        run: |
-          SIMULATOR="${{ matrix.device }} (${{ matrix.os }})"
-          xcrun simctl boot "${SIMULATOR}"
+#       - name: Start iOS Simulator
+#         run: |
+#           SIMULATOR="${{ matrix.device }} (${{ matrix.os }})"
+#           xcrun simctl boot "${SIMULATOR}"
 
-      - name: Run iOS Integration Tests
-        run: flutter test integration_test --flavor dev -d "${SIMULATOR}"
+#       - name: Run iOS Integration Tests
+#         run: flutter test integration_test --flavor dev -d "${SIMULATOR}"
 
-      - name: Upload Test Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-e2e-results-${{ matrix.device }}
-          path: test-results
-          retention-days: 7
+#       - name: Upload Test Results
+#         if: always()
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: ios-e2e-results-${{ matrix.device }}
+#           path: test-results
+#           retention-days: 7

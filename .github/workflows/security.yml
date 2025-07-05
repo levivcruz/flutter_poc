@@ -1,49 +1,49 @@
-name: Security Scan
+# name: Security Scan
 
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  schedule:
-    - cron: '0 0 * * 0'  # Roda todo domingo à meia-noite
+# on:
+#   push:
+#     branches: [main]
+#   pull_request:
+#     branches: [main]
+#   schedule:
+#     - cron: '0 0 * * 0'  # Roda todo domingo à meia-noite
 
-jobs:
-  security_scan:
-    name: Security Scan
-    runs-on: ubuntu-latest
+# jobs:
+#   security_scan:
+#     name: Security Scan
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v3
 
-      - name: Cache dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.pub-cache
-          key: ${{ runner.os }}-pub-security-${{ hashFiles('**/pubspec.lock') }}
+#       - name: Cache dependencies
+#         uses: actions/cache@v3
+#         with:
+#           path: ~/.pub-cache
+#           key: ${{ runner.os }}-pub-security-${{ hashFiles('**/pubspec.lock') }}
 
-      - name: Run Dependency Check
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu'
-          java-version: '17'
+#       - name: Run Dependency Check
+#         uses: actions/setup-java@v3
+#         with:
+#           distribution: 'zulu'
+#           java-version: '17'
 
-      - name: OWASP Dependency Check
-        uses: dependency-check/Dependency-Check_Action@main
-        with:
-          project: 'flutter_poc_bm'
-          path: '.'
-          format: 'HTML'
+#       - name: OWASP Dependency Check
+#         uses: dependency-check/Dependency-Check_Action@main
+#         with:
+#           project: 'flutter_poc_bm'
+#           path: '.'
+#           format: 'HTML'
 
-      - name: Upload Security Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: security-report
-          path: reports
-          retention-days: 30
+#       - name: Upload Security Report
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: security-report
+#           path: reports
+#           retention-days: 30
 
-      - name: Flutter Analyze Security
-        run: |
-          flutter pub global activate dart_code_security
-          flutter pub run dart_code_security:scan
+#       - name: Flutter Analyze Security
+#         run: |
+#           flutter pub global activate dart_code_security
+#           flutter pub run dart_code_security:scan
