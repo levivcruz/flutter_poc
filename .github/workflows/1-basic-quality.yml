@@ -1,0 +1,45 @@
+name: 1. Qualidade Básica
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  basic-checks:
+    name: Verificações Básicas
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          channel: 'stable'
+
+      - name: Instalar dependências
+        run: flutter pub get
+
+      - name: Verificar formatação
+        run: dart format --set-exit-if-changed .
+
+      - name: Analisar código
+        run: flutter analyze
+
+      - name: Executar testes unitários
+        run: flutter test --coverage
+
+      - name: Verificar cobertura mínima
+        run: |
+          COVERAGE=$(lcov --summary coverage/lcov.info | grep "lines......" | cut -d ' ' -f 4 | cut -d '%' -f 1)
+          if (( $(echo "$COVERAGE < 70" | bc -l) )); then
+            echo "Cobertura de testes muito baixa: $COVERAGE% (mínimo: 70%)"
+            exit 1
+          fi
+
+      - name: Verificar vulnerabilidades conhecidas
+        run: flutter pub outdated
