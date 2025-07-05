@@ -1,0 +1,26 @@
+# This file configures workspace-wide caching for faster CI/CD
+version: 1
+enabled: true
+
+cache:
+  # Diretórios para cache
+  paths:
+    - ~/.pub-cache
+    - .dart_tool
+    - build
+    - ios/Pods
+    - android/.gradle
+
+  # Chaves para invalidação do cache
+  key:
+    files:
+      - pubspec.lock
+      - ios/Podfile.lock
+      - android/gradle/wrapper/gradle-wrapper.properties
+
+  # Restore keys em ordem de preferência
+  restore-keys:
+    - flutter-cache-
+    - pub-cache-
+    - pods-cache-
+    - gradle-cache-
